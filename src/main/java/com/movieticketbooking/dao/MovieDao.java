@@ -3,6 +3,7 @@ package com.movieticketbooking.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -15,6 +16,10 @@ import com.movieticketbooking.entity.Movie;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 
 @Repository
@@ -60,46 +65,40 @@ public class MovieDao {
 		}
 		return "Movie deleted";
 	}
-
+    @Transactional
 	public String mergeMovie(Movie movie) {
-		Session session=sf.openSession();
-		Transaction tr=session.beginTransaction();
-		session.merge(movie);
-		tr.commit();
+		
+		entityManager.merge(movie);
 		return "Movie updated successfully";
 	}
-
+    
 	public List<Movie> getAllMovie() {
-		Session session=sf.openSession();
-		Transaction tr=session.beginTransaction();
-		Criteria crt=session .createCriteria(Movie.class);
-		List<Movie>movie=crt.list();
-		tr.commit();
-		return movie;
+	    TypedQuery<Movie> query = entityManager.createQuery("Select m from Movie m",Movie.class);
+		return query.getResultList();
 	}
-
+   
 	public List<Movie> getAnimationMovie() {
-		Session session=sf.openSession();
-		Criteria crt=session .createCriteria(Movie.class);
-		crt.add(Restrictions.eq("category", "Animation"));
-		List<Movie>movie=crt.list();
-		return movie;
+		TypedQuery<Movie> query = entityManager.createQuery("Select m from Movie where m.category = :category",Movie.class);
+		query.setParameter("category", "Animated");
+		return query.getResultList();
 	}
-
+    
 	public List<Movie> getHorrorAndTrillerMovie() {
-		Session session=sf.openSession();
-		Transaction tr=session.beginTransaction();
-		Criteria crt=session .createCriteria(Movie.class);
-		crt.add(Restrictions.or(
-		        Restrictions.eq("category", "Horror"),
-		        Restrictions.eq("category", "thriller")
-		    ));
-		List<Movie>movie=crt.list();
-		tr.commit();
-		return movie;
+		
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Movie> criteriaQuery = criteriaBuilder.createQuery(Movie.class);
+		Root<Movie> root = criteriaQuery.from(Movie.class);
+		
+		criteriaQuery.select(root).where(
+				criteriaBuilder.or(
+				criteriaBuilder.equal(root.get("category"),"Horror"),
+				criteriaBuilder.equal(root.get("category"),"Thriller")
+				)
+				);
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
-
-	public List<Movie> getRatingGT4() {
+    
+    public List<Movie> getRatingGT4() {
 		Session session=sf.openSession();
 		Criteria crt=session .createCriteria(Movie.class);
 		List<Movie>movie=crt.list();
