@@ -67,19 +67,4 @@ public class MovieController {
 	public List<Movie> getHorrorAndTrillerMovie() {
 		return ms.getHorrorAndTrillerMovie();
 	}
-
-	@GetMapping("rating4")
-	public List<Movie> getRatingGT4() {
-		return ms.getRatingGT4();
-	}
-
-	@GetMapping("ratinglessthan4")
-	public List<Movie> getRatingLT4() {
-		return ms.getRatingLT4();
-	}
-
-	@GetMapping("/moviename")
-	public List<String> getMovieName() {
-		return ms.getMovieName();
-	}
 }
